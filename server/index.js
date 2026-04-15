@@ -405,6 +405,12 @@ app.post('/api/create-preference', async (req, res) => {
 
   try {
     const preference = new Preference(client);
+    
+    // Configurar URL de retorno dinámicamente:
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? (process.env.FRONTEND_URL || 'https://albercas-frontend.vercel.app') 
+      : `http://${req.headers.host ? req.headers.host.split(':')[0] : 'localhost'}:5173`;
+
     const result = await preference.create({
       body: {
         items: [
@@ -416,10 +422,11 @@ app.post('/api/create-preference', async (req, res) => {
           }
         ],
         back_urls: {
-          success: `http://${req.headers.host || 'localhost:3001'}/api/payments/status?status=success&userId=${userId}`,
-          failure: `http://${req.headers.host || 'localhost:3001'}/api/payments/status?status=failure&userId=${userId}`,
-          pending: `http://${req.headers.host || 'localhost:3001'}/api/payments/status?status=pending&userId=${userId}`,
+          success: `${frontendUrl}/users?payment=success&userId=${userId}`,
+          failure: `${frontendUrl}/users?payment=failure&userId=${userId}`,
+          pending: `${frontendUrl}/users?payment=pending&userId=${userId}`,
         },
+        auto_return: "approved",
         external_reference: String(req.body.external_reference || userId),
         binary_mode: true,
       }
@@ -435,13 +442,13 @@ app.post('/api/create-preference', async (req, res) => {
   }
 });
 
-// Helper for Return URLs (Back URLs) to simulate feedback
+// Helper endpoint for backwards compatibility (optional now)
 app.get('/api/payments/status', (req, res) => {
   const { status, userId } = req.query;
-  // En un entorno real, aquí se usarían Webhooks para confirmar el pago
-  // Por ahora redirigimos al frontend con un parámetro de éxito
-  const frontendHost = req.headers.host ? req.headers.host.split(':')[0] : 'localhost';
-  res.redirect(`http://${frontendHost}:5173/users?payment=${status}&userId=${userId}`);
+  const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? (process.env.FRONTEND_URL || 'https://albercas-frontend.vercel.app') 
+      : `http://${req.headers.host ? req.headers.host.split(':')[0] : 'localhost'}:5173`;
+  res.redirect(`${frontendUrl}/users?payment=${status}&userId=${userId}`);
 });
 
 // Polling endpoint for QR code checkout

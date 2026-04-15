@@ -115,10 +115,10 @@ export default function UserDashboard({ onNavigate }) {
             fontSize: 20, fontWeight: 700, color: 'white', flexShrink: 0,
             overflow: 'hidden'
           }}>
-            {user?.avatar ? <img src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            {user?.avatar ? <img src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'Us')}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>¡Hola, {user?.name?.split(' ')[0]}!</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>¡Hola, {user?.name ? user.name.split(' ')[0] : 'Usuario'}!</div>
             <div style={{ color: 'var(--color-text-muted)', fontSize: 13, marginTop: 2 }}>
               Membresía <strong style={{ color: 'var(--color-primary)' }}>{user?.membership || 'No activa'}</strong> · Tel: {user?.phone || 'Sin número'}
             </div>
